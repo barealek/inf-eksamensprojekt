@@ -29,7 +29,10 @@ const (
 func Register(mux *http.ServeMux, db *database.DB) {
 	mux.HandleFunc("POST /auth/register", postAuthRegister(db))
 	mux.HandleFunc("POST /auth/login", postAuthLogin(db))
+	mux.HandleFunc("GET /queues", getQueuesList(db))
 	mux.HandleFunc("POST /queues/new", postQueuesNew(db))
+	mux.HandleFunc("GET /queues/{id}/me", getQueueMe(db))
+	mux.HandleFunc("POST /queues/{id}/student/dismiss", postStudentDismiss(db))
 	mux.HandleFunc("GET /queues/{id}", getQueue(db))
 	mux.HandleFunc("POST /queues/{id}/join", postQueueJoin(db))
 	mux.HandleFunc("POST /queues/{id}/mark-helped", postMarkHelped(db))
@@ -138,6 +141,167 @@ func validateTeacherCredentials(username, password string) error {
 		return errors.New("password must be at least 8 characters")
 	}
 	return nil
+}
+
+func getQueuesList(db *database.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ts, ok := teacherFromRequest(db, r)
+		if !ok {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		list, err := db.ListQueuesForSession(r.Context(), ts.ID)
+		if err != nil {
+			log.Printf("ListQueuesForSession: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		type row struct {
+			ID         string `json:"id"`
+			CreatedAt  string `json:"created_at"`
+			Waiting    int    `json:"waiting"`
+		}
+		out := make([]row, 0, len(list))
+		for _, q := range list {
+			out = append(out, row{
+				ID:        q.ID.String(),
+				CreatedAt: q.CreatedAt.UTC().Format(time.RFC3339),
+				Waiting:   q.Waiting,
+			})
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"queues": out})
+	}
+}
+
+func getQueueMe(db *database.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		qid, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "invalid queue id", http.StatusBadRequest)
+			return
+		}
+		q, err := db.QueueByID(r.Context(), qid)
+		if err != nil {
+			log.Printf("QueueByID: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if q == nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		eid, ok, err := StudentFromRequest(r.Context(), db, r)
+		if err != nil {
+			if errors.Is(err, ErrInvalidStudentCookie) {
+				clearStudentCookies(w)
+				writeJSON(w, http.StatusUnauthorized, map[string]any{"authenticated": false})
+				return
+			}
+			log.Printf("StudentFromRequest: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if !ok {
+			writeJSON(w, http.StatusOK, map[string]any{"authenticated": false})
+			return
+		}
+		entry, err := db.QueueEntryByID(r.Context(), eid)
+		if err != nil {
+			log.Printf("QueueEntryByID: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if entry == nil || entry.QueueID != qid {
+			writeJSON(w, http.StatusOK, map[string]any{"authenticated": false})
+			return
+		}
+		total, err := db.CountWaitingInQueue(r.Context(), qid)
+		if err != nil {
+			log.Printf("CountWaitingInQueue: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if entry.HelpedAt != nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"authenticated":  true,
+				"display_name":   entry.DisplayName,
+				"helped":         true,
+				"position":       nil,
+				"waiting_ahead":  0,
+				"total_waiting":  total,
+			})
+			return
+		}
+		ahead, err := db.WaitingAheadCount(r.Context(), qid, entry.ID, entry.CreatedAt)
+		if err != nil {
+			log.Printf("WaitingAheadCount: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"authenticated": true,
+			"display_name":  entry.DisplayName,
+			"helped":        false,
+			"position":      ahead + 1,
+			"waiting_ahead": ahead,
+			"total_waiting": total,
+		})
+	}
+}
+
+func postStudentDismiss(db *database.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		qid, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "invalid queue id", http.StatusBadRequest)
+			return
+		}
+		eid, ok, err := StudentFromRequest(r.Context(), db, r)
+		if err != nil {
+			if errors.Is(err, ErrInvalidStudentCookie) {
+				clearStudentCookies(w)
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"status": "cleared"})
+				return
+			}
+			log.Printf("StudentFromRequest: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if !ok {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		entry, err := db.QueueEntryByID(r.Context(), eid)
+		if err != nil {
+			log.Printf("QueueEntryByID: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if entry == nil || entry.QueueID != qid {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		if entry.HelpedAt == nil {
+			http.Error(w, "not helped yet", http.StatusConflict)
+			return
+		}
+		clearStudentCookies(w)
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	}
+}
+
+func clearStudentCookies(w http.ResponseWriter) {
+	expire := cookieOptions{
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   os.Getenv("COOKIE_SECURE") == "1",
+	}
+	setCookie(w, cookieStudentEntry, "", expire)
+	setCookie(w, cookieStudentSecret, "", expire)
 }
 
 func postQueuesNew(db *database.DB) http.HandlerFunc {

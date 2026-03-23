@@ -11,12 +11,9 @@ CREATE TABLE IF NOT EXISTS teachers (
 CREATE TABLE IF NOT EXISTS teacher_sessions (
     id UUID PRIMARY KEY,
     token TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    teacher_id UUID REFERENCES teachers (id) ON DELETE CASCADE;
 );
-
--- Link sessions to accounts (additive for existing DBs)
-ALTER TABLE teacher_sessions
-    ADD COLUMN IF NOT EXISTS teacher_id UUID REFERENCES teachers (id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS idx_teacher_sessions_teacher_id ON teacher_sessions (teacher_id);
 
@@ -33,10 +30,8 @@ CREATE TABLE IF NOT EXISTS queue_entries (
     queue_id UUID NOT NULL REFERENCES queues (id) ON DELETE CASCADE,
     display_name TEXT NOT NULL,
     student_secret TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    helped_at TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS idx_queue_entries_queue_id ON queue_entries (queue_id);
-
-ALTER TABLE queue_entries
-    ADD COLUMN IF NOT EXISTS helped_at TIMESTAMPTZ;

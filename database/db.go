@@ -295,6 +295,88 @@ func (db *DB) MarkEntryHelped(ctx context.Context, queueID, entryID uuid.UUID) (
 	return true, nil
 }
 
+// QueueSummary is a queue row with a waiting count for teacher dashboards.
+type QueueSummary struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	Waiting   int
+}
+
+// ListQueuesForSession returns queues owned by the teacher session, newest first.
+func (db *DB) ListQueuesForSession(ctx context.Context, sessionID uuid.UUID) ([]QueueSummary, error) {
+	rows, err := db.Pool.Query(ctx,
+		`SELECT q.id, q.created_at,
+			(SELECT COUNT(*)::int FROM queue_entries e WHERE e.queue_id = q.id AND e.helped_at IS NULL)
+		 FROM queues q
+		 WHERE q.teacher_session_id = $1
+		 ORDER BY q.created_at DESC`,
+		sessionID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []QueueSummary
+	for rows.Next() {
+		var s QueueSummary
+		if err := rows.Scan(&s.ID, &s.CreatedAt, &s.Waiting); err != nil {
+			return nil, err
+		}
+		list = append(list, s)
+	}
+	return list, rows.Err()
+}
+
+// QueueEntryByID loads one entry (any queue).
+func (db *DB) QueueEntryByID(ctx context.Context, entryID uuid.UUID) (*QueueEntry, error) {
+	var e QueueEntry
+	var helped pgtype.Timestamptz
+	err := db.Pool.QueryRow(ctx,
+		`SELECT id, queue_id, display_name, created_at, helped_at
+		 FROM queue_entries WHERE id = $1`,
+		entryID,
+	).Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.CreatedAt, &helped)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if helped.Valid {
+		ts := helped.Time
+		e.HelpedAt = &ts
+	}
+	return &e, nil
+}
+
+// WaitingAheadCount returns how many still-waiting entries are strictly before this one in line (FIFO).
+func (db *DB) WaitingAheadCount(ctx context.Context, queueID, entryID uuid.UUID, createdAt time.Time) (int, error) {
+	var n int
+	err := db.Pool.QueryRow(ctx,
+		`SELECT COUNT(*)::int FROM queue_entries
+		 WHERE queue_id = $1 AND helped_at IS NULL
+		   AND (created_at < $2 OR (created_at = $2 AND id < $3))`,
+		queueID, createdAt, entryID,
+	).Scan(&n)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+// CountWaitingInQueue returns the number of entries not yet helped.
+func (db *DB) CountWaitingInQueue(ctx context.Context, queueID uuid.UUID) (int, error) {
+	var n int
+	err := db.Pool.QueryRow(ctx,
+		`SELECT COUNT(*)::int FROM queue_entries WHERE queue_id = $1 AND helped_at IS NULL`,
+		queueID,
+	).Scan(&n)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
 // EntrySecretValid checks student cookie against one row.
 func (db *DB) EntrySecretValid(ctx context.Context, entryID uuid.UUID, secret string) (bool, error) {
 	var got string
