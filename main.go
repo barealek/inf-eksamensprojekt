@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -26,11 +28,25 @@ func main() {
 	defer db.Close()
 
 	mux := http.NewServeMux()
-	api.Register(mux, db)
+	apiMux := http.NewServeMux()
+	api.Register(apiMux, db)
+	mux.Handle("/api/", http.StripPrefix("/api", apiMux))
+
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
+
+	// Cannot use "GET /" here: it conflicts with "/api/" (method-specific vs subtree). Use "/" and
+	// restrict to GET; /api/* is handled by "/api/". SPA: unknown paths → index.html.
+	staticRoot := "./static"
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		serveStaticSPA(w, r, staticRoot)
+	}))
 
 	srv := &http.Server{
 		Addr:              ":8080",
@@ -49,6 +65,46 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
+}
+
+// serveStaticSPA serves files from root; missing files (client routes like /queues) get index.html.
+func serveStaticSPA(w http.ResponseWriter, r *http.Request, root string) {
+	p := path.Clean(r.URL.Path)
+	if p == "." || p == "/" {
+		http.ServeFile(w, r, filepath.Join(root, "index.html"))
+		return
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	local := filepath.Join(root, strings.TrimPrefix(p, "/"))
+	if !filePathUnderRoot(root, local) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	fi, err := os.Stat(local)
+	if err == nil && !fi.IsDir() {
+		http.ServeFile(w, r, local)
+		return
+	}
+	if err == nil && fi.IsDir() {
+		idx := filepath.Join(local, "index.html")
+		if _, err := os.Stat(idx); err == nil {
+			http.ServeFile(w, r, idx)
+			return
+		}
+	}
+	http.ServeFile(w, r, filepath.Join(root, "index.html"))
+}
+
+func filePathUnderRoot(root, full string) bool {
+	absRoot, err1 := filepath.Abs(root)
+	absFull, err2 := filepath.Abs(full)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	sep := string(os.PathSeparator)
+	return absFull == absRoot || strings.HasPrefix(absFull, absRoot+sep)
 }
 
 // withCORS allows browser credentialed requests from Vite (or CORS_ORIGINS).
