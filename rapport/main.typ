@@ -166,6 +166,7 @@
 
 // Problemformulering
 #include "pf.typ"
+#include "arbejdsspørgsmål.typ"
 
 // =========================
 // MAIN CONTENT
@@ -188,7 +189,7 @@
   title: none
 )
 = Bibliografi
-// #bibliography("bibliography.bib", style: "harvard-cite-them-right")
+#bibliography("kilder.bib", style: "harvard-cite-them-right")
 
 = Symbolliste
 // #include "sections/symboler.typ"
