@@ -69,7 +69,7 @@ export function markHelped(queueId, entryId) {
 }
 
 export function getQueueMe(queueId) {
-  return apiFetch(`/queues/${queueId}/me`, { method: 'GET', headers: {} })
+  return apiFetch(`/queues/${queueId}/me`, { method: 'GET' })
 }
 
 export function dismissStudentSession(queueId) {

@@ -8,15 +8,6 @@ import {
 import { A, useNavigate } from "@solidjs/router";
 import { listQueues, createQueue } from "../lib/api";
 
-function formatWhen(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
 export default function QueueList() {
   const navigate = useNavigate();
   const [busy, setBusy] = createSignal(false);

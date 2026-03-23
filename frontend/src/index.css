@@ -128,10 +128,6 @@ body {
   box-shadow: var(--shadow);
 }
 
-.card--hero {
-  width: 100%;
-}
-
 .empty-state {
   text-align: center;
   padding: 2rem 1.5rem;

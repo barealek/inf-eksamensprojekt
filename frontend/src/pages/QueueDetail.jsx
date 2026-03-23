@@ -9,14 +9,6 @@ import { useParams, A } from "@solidjs/router";
 import QRCode from "qrcode";
 import { getQueue, markHelped } from "../lib/api";
 
-function formatWhen(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
 export default function QueueDetail() {
   const params = useParams();
   const queueId = () => params.id;

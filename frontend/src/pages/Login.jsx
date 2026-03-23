@@ -39,7 +39,7 @@ export default function Login() {
 
   return (
     <main class="page page--narrow">
-      <div class="card card--hero">
+      <div class="card">
         <h1 class="app-title">Vejledningskø</h1>
         <p class="lede">Log ind som lærer for at administrere dine køer.</p>
         {checking() ? (
