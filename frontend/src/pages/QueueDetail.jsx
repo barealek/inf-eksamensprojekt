@@ -9,6 +9,9 @@ import { useParams, A } from "@solidjs/router";
 import QRCode from "qrcode";
 import { getQueue, markHelped } from "../lib/api";
 
+import TimeAgo from "javascript-time-ago";
+import "javascript-time-ago/locale/da";
+
 export default function QueueDetail() {
   const params = useParams();
   const queueId = () => params.id;
@@ -126,7 +129,7 @@ export default function QueueDetail() {
               <section class="card">
                 <h2 class="section-title">I køen</h2>
                 <p class="muted small">
-                  Tryk på en person når de har fået hjælp — de striber ud.
+                  Tryk på en person når de har fået hjælp.
                 </p>
                 <ul class="entry-list">
                   {(() => {
@@ -135,35 +138,38 @@ export default function QueueDetail() {
                       const done = !!e.helped_at;
                       const place = done ? null : ++waitingPlace;
                       return (
-                      <li>
-                        <button
-                          type="button"
-                          class="entry-row"
-                          classList={{
-                            "entry-row--done": done,
-                            "entry-row--pending": pendingId() === e.id,
-                          }}
-                          disabled={done || pendingId() === e.id}
-                          onClick={() => !done && handleMark(e.id)}
-                        >
-                          <span class="entry-name">
-                            {place != null && (
-                              <>
-                                <small>{place}.</small>{" "}
-                              </>
-                            )}
-                            {e.display_name}
-                          </span>
-                          <span class="entry-meta">
-                            {done
-                              ? "Færdig"
-                              : pendingId() === e.id
-                                ? "…"
-                                : "Marker færdig"}
-                          </span>
-                        </button>
-                      </li>
-                    );
+                        <li>
+                          <button
+                            type="button"
+                            class="entry-row"
+                            classList={{
+                              "entry-row--done": done,
+                              "entry-row--pending": pendingId() === e.id,
+                            }}
+                            disabled={done || pendingId() === e.id}
+                            onClick={() => !done && handleMark(e.id)}
+                          >
+                            <span class="entry-name">
+                              {place != null && (
+                                <>
+                                  <small>{place}.</small>{" "}
+                                </>
+                              )}
+                              {e.display_name}
+                            </span>
+                            <span class="entry-meta">
+                              {done
+                                ? "Fik hjælp " +
+                                  new TimeAgo("da").format(
+                                    new Date(e.helped_at),
+                                  )
+                                : pendingId() === e.id
+                                  ? "…"
+                                  : "Marker færdig"}
+                            </span>
+                          </button>
+                        </li>
+                      );
                     });
                   })()}
                 </ul>

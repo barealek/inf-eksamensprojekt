@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.16.1",
+    "javascript-time-ago": "^2.6.4",
     "qrcode": "^1.5.4",
     "solid-js": "^1.9.11"
   },
