@@ -31,6 +31,8 @@ export default function QueueDetail() {
   const [qrSrc, setQrSrc] = createSignal("");
   const [actionErr, setActionErr] = createSignal("");
   const [pendingId, setPendingId] = createSignal(null);
+  /** Bumps once per minute so relative "Fik hjælp …" strings stay current. */
+  const [relativeTimeTick, setRelativeTimeTick] = createSignal(0);
 
   const [data, { refetch }] = createResource(queueId, async (id) => {
     if (!id) return null;
@@ -43,6 +45,15 @@ export default function QueueDetail() {
     const t = setInterval(() => {
       void refetch();
     }, 5000);
+    onCleanup(() => clearInterval(t));
+  });
+
+  createEffect(() => {
+    const id = queueId();
+    if (!id) return;
+    const t = setInterval(() => {
+      setRelativeTimeTick((n) => n + 1);
+    }, 60_000);
     onCleanup(() => clearInterval(t));
   });
 
@@ -175,10 +186,11 @@ export default function QueueDetail() {
                                 </span>
                                 <span class="entry-meta">
                                   {done
-                                    ? "Fik hjælp " +
-                                      new TimeAgo("da").format(
-                                        new Date(e.helped_at),
-                                      )
+                                    ? (relativeTimeTick(),
+                                      "Fik hjælp " +
+                                        new TimeAgo("da").format(
+                                          new Date(e.helped_at),
+                                        ))
                                     : pendingId() === e.id
                                       ? "…"
                                       : "Marker færdig"}
