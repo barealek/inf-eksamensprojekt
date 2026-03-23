@@ -24,6 +24,15 @@ export default function QueueDetail() {
   createEffect(() => {
     const id = queueId();
     if (!id) return;
+    const t = setInterval(() => {
+      void refetch();
+    }, 5000);
+    onCleanup(() => clearInterval(t));
+  });
+
+  createEffect(() => {
+    const id = queueId();
+    if (!id) return;
     let cancelled = false;
     onCleanup(() => {
       cancelled = true;
@@ -70,7 +79,7 @@ export default function QueueDetail() {
         <A href="/queues">← Dine køer</A>
       </nav>
 
-      <Show when={data.loading}>
+      <Show when={data.state === "pending"}>
         <p class="muted">Henter kø…</p>
       </Show>
 

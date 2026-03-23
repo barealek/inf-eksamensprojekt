@@ -1,3 +1,5 @@
+const API_PREFIX = '/api'
+
 export async function apiFetch(path, options = {}) {
   const { headers: headerInit, ...rest } = options
   const headers = new Headers(headerInit)
@@ -8,7 +10,8 @@ export async function apiFetch(path, options = {}) {
   ) {
     headers.set('Content-Type', 'application/json')
   }
-  const r = await fetch(path, {
+  const url = path.startsWith('http') ? path : `${API_PREFIX}${path}`
+  const r = await fetch(url, {
     credentials: 'include',
     ...rest,
     headers,
