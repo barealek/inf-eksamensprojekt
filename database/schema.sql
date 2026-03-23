@@ -1,4 +1,3 @@
--- Teachers, sessions, queues, entries (UUIDs from application).
 
 CREATE TABLE IF NOT EXISTS teachers (
     id UUID PRIMARY KEY,
@@ -12,7 +11,7 @@ CREATE TABLE IF NOT EXISTS teacher_sessions (
     id UUID PRIMARY KEY,
     token TEXT NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    teacher_id UUID REFERENCES teachers (id) ON DELETE CASCADE;
+    teacher_id UUID REFERENCES teachers (id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_teacher_sessions_teacher_id ON teacher_sessions (teacher_id);
