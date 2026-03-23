@@ -98,7 +98,8 @@ export default function QueueList() {
               <li>
                 <A class="queue-card" href={`/queue/${q.id}`}>
                   <span class="queue-card-title">
-                    Kø fra kl. {new Date(q.created_at).toLocaleTimeString()}
+                    Venteliste fra kl.{" "}
+                    {new Date(q.created_at).toLocaleTimeString()}
                   </span>
                   <span class="queue-card-wait">
                     <strong>{q.waiting}</strong>
