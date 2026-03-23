@@ -129,9 +129,12 @@ export default function QueueDetail() {
                   Tryk på en person når de har fået hjælp — de striber ud.
                 </p>
                 <ul class="entry-list">
-                  {(q().entries ?? []).map((e) => {
-                    const done = !!e.helped_at;
-                    return (
+                  {(() => {
+                    let waitingPlace = 0;
+                    return (q().entries ?? []).map((e) => {
+                      const done = !!e.helped_at;
+                      const place = done ? null : ++waitingPlace;
+                      return (
                       <li>
                         <button
                           type="button"
@@ -143,7 +146,14 @@ export default function QueueDetail() {
                           disabled={done || pendingId() === e.id}
                           onClick={() => !done && handleMark(e.id)}
                         >
-                          <span class="entry-name">{e.display_name}</span>
+                          <span class="entry-name">
+                            {place != null && (
+                              <>
+                                <small>{place}.</small>{" "}
+                              </>
+                            )}
+                            {e.display_name}
+                          </span>
                           <span class="entry-meta">
                             {done
                               ? "Færdig"
@@ -154,7 +164,8 @@ export default function QueueDetail() {
                         </button>
                       </li>
                     );
-                  })}
+                    });
+                  })()}
                 </ul>
                 {(q().entries ?? []).length === 0 && (
                   <p class="muted">Ingen i køen endnu.</p>
