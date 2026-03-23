@@ -12,6 +12,19 @@ import { getQueue, markHelped } from "../lib/api";
 import TimeAgo from "javascript-time-ago";
 import "javascript-time-ago/locale/da";
 
+/** Waiting first (FIFO by joined time), then helped (newest marked done first). */
+function sortQueueEntries(entries) {
+  return [...(entries ?? [])].sort((a, b) => {
+    const aWaiting = !a.helped_at;
+    const bWaiting = !b.helped_at;
+    if (aWaiting !== bWaiting) return aWaiting ? -1 : 1;
+    if (aWaiting) {
+      return new Date(a.created_at) - new Date(b.created_at);
+    }
+    return new Date(b.helped_at) - new Date(a.helped_at);
+  });
+}
+
 export default function QueueDetail() {
   const params = useParams();
   const queueId = () => params.id;
@@ -131,51 +144,56 @@ export default function QueueDetail() {
                 <p class="muted small">
                   Tryk på en person når de har fået hjælp.
                 </p>
-                <ul class="entry-list">
-                  {(() => {
-                    let waitingPlace = 0;
-                    return (q().entries ?? []).map((e) => {
-                      const done = !!e.helped_at;
-                      const place = done ? null : ++waitingPlace;
-                      return (
-                        <li>
-                          <button
-                            type="button"
-                            class="entry-row"
-                            classList={{
-                              "entry-row--done": done,
-                              "entry-row--pending": pendingId() === e.id,
-                            }}
-                            disabled={done || pendingId() === e.id}
-                            onClick={() => !done && handleMark(e.id)}
-                          >
-                            <span class="entry-name">
-                              {place != null && (
-                                <>
-                                  <small>{place}.</small>{" "}
-                                </>
-                              )}
-                              {e.display_name}
-                            </span>
-                            <span class="entry-meta">
-                              {done
-                                ? "Fik hjælp " +
-                                  new TimeAgo("da").format(
-                                    new Date(e.helped_at),
-                                  )
-                                : pendingId() === e.id
-                                  ? "…"
-                                  : "Marker færdig"}
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    });
-                  })()}
-                </ul>
-                {(q().entries ?? []).length === 0 && (
-                  <p class="muted">Ingen i køen endnu.</p>
-                )}
+                {(() => {
+                  const entries = sortQueueEntries(q().entries);
+                  let waitingPlace = 0;
+                  return (
+                    <>
+                      <ul class="entry-list">
+                        {entries.map((e) => {
+                          const done = !!e.helped_at;
+                          const place = done ? null : ++waitingPlace;
+                          return (
+                            <li>
+                              <button
+                                type="button"
+                                class="entry-row"
+                                classList={{
+                                  "entry-row--done": done,
+                                  "entry-row--pending": pendingId() === e.id,
+                                }}
+                                disabled={done || pendingId() === e.id}
+                                onClick={() => !done && handleMark(e.id)}
+                              >
+                                <span class="entry-name">
+                                  {place != null && (
+                                    <>
+                                      <small>{place}.</small>{" "}
+                                    </>
+                                  )}
+                                  {e.display_name}
+                                </span>
+                                <span class="entry-meta">
+                                  {done
+                                    ? "Fik hjælp " +
+                                      new TimeAgo("da").format(
+                                        new Date(e.helped_at),
+                                      )
+                                    : pendingId() === e.id
+                                      ? "…"
+                                      : "Marker færdig"}
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      {entries.length === 0 && (
+                        <p class="muted">Ingen i køen endnu.</p>
+                      )}
+                    </>
+                  );
+                })()}
               </section>
             </div>
           </>
