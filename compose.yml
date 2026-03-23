@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      # PG 18+ uses this path (not /var/lib/postgresql/data)
+      - ./_data:/var/lib/postgresql/18/docker
