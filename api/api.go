@@ -157,9 +157,9 @@ func getQueuesList(db *database.DB) http.HandlerFunc {
 			return
 		}
 		type row struct {
-			ID         string `json:"id"`
-			CreatedAt  string `json:"created_at"`
-			Waiting    int    `json:"waiting"`
+			ID        string `json:"id"`
+			CreatedAt string `json:"created_at"`
+			Waiting   int    `json:"waiting"`
 		}
 		out := make([]row, 0, len(list))
 		for _, q := range list {
@@ -224,12 +224,13 @@ func getQueueMe(db *database.DB) http.HandlerFunc {
 		}
 		if entry.HelpedAt != nil {
 			writeJSON(w, http.StatusOK, map[string]any{
-				"authenticated":  true,
-				"display_name":   entry.DisplayName,
-				"helped":         true,
-				"position":       nil,
-				"waiting_ahead":  0,
-				"total_waiting":  total,
+				"authenticated": true,
+				"display_name":  entry.DisplayName,
+				"note":          entry.Note,
+				"helped":        true,
+				"position":      nil,
+				"waiting_ahead": 0,
+				"total_waiting": total,
 			})
 			return
 		}
@@ -242,6 +243,7 @@ func getQueueMe(db *database.DB) http.HandlerFunc {
 		writeJSON(w, http.StatusOK, map[string]any{
 			"authenticated": true,
 			"display_name":  entry.DisplayName,
+			"note":          entry.Note,
 			"helped":        false,
 			"position":      ahead + 1,
 			"waiting_ahead": ahead,
@@ -393,6 +395,7 @@ func postQueueJoin(db *database.DB) http.HandlerFunc {
 		}
 		var body struct {
 			Name string `json:"name"`
+			Note string `json:"note"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "invalid json", http.StatusBadRequest)
@@ -408,7 +411,7 @@ func postQueueJoin(db *database.DB) http.HandlerFunc {
 			http.Error(w, "server error", http.StatusInternalServerError)
 			return
 		}
-		entry, err := db.AddQueueEntry(r.Context(), qid, body.Name, secret)
+		entry, err := db.AddQueueEntry(r.Context(), qid, body.Name, body.Note, secret)
 		if err != nil {
 			log.Printf("AddQueueEntry: %v", err)
 			http.Error(w, "server error", http.StatusInternalServerError)

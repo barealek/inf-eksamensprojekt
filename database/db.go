@@ -67,11 +67,11 @@ func (db *DB) Close() {
 
 // Teacher is a registered lærer-konto.
 type Teacher struct {
-	ID          uuid.UUID
-	Username    string
+	ID           uuid.UUID
+	Username     string
 	PasswordHash string
-	CreatedAt   time.Time
-	LastLoginAt *time.Time
+	CreatedAt    time.Time
+	LastLoginAt  *time.Time
 }
 
 // TeacherByUsername loads a teacher for login (includes password hash).
@@ -229,20 +229,21 @@ type QueueEntry struct {
 	ID          uuid.UUID
 	QueueID     uuid.UUID
 	DisplayName string
+	Note        string
 	CreatedAt   time.Time
 	HelpedAt    *time.Time
 }
 
 // AddQueueEntry appends a student; studentSecret is stored for later cookie checks.
-func (db *DB) AddQueueEntry(ctx context.Context, queueID uuid.UUID, displayName, studentSecret string) (*QueueEntry, error) {
+func (db *DB) AddQueueEntry(ctx context.Context, queueID uuid.UUID, displayName, note, studentSecret string) (*QueueEntry, error) {
 	id := uuid.New()
 	var e QueueEntry
 	err := db.Pool.QueryRow(ctx,
-		`INSERT INTO queue_entries (id, queue_id, display_name, student_secret)
-		 VALUES ($1, $2, $3, $4)
-		 RETURNING id, queue_id, display_name, created_at`,
-		id, queueID, displayName, studentSecret,
-	).Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.CreatedAt)
+		`INSERT INTO queue_entries (id, queue_id, display_name, note, student_secret)
+		 VALUES ($1, $2, $3, $4, $5)
+		 RETURNING id, queue_id, display_name, note, created_at`,
+		id, queueID, displayName, note, studentSecret,
+	).Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.Note, &e.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +253,7 @@ func (db *DB) AddQueueEntry(ctx context.Context, queueID uuid.UUID, displayName,
 // ListQueueEntries returns entries for a queue (no secrets). Waiting first, then helped.
 func (db *DB) ListQueueEntries(ctx context.Context, queueID uuid.UUID) ([]QueueEntry, error) {
 	rows, err := db.Pool.Query(ctx,
-		`SELECT id, queue_id, display_name, created_at, helped_at
+		`SELECT id, queue_id, display_name, note, created_at, helped_at
 		 FROM queue_entries WHERE queue_id = $1
 		 ORDER BY (helped_at IS NULL) DESC, created_at ASC`,
 		queueID,
@@ -265,7 +266,7 @@ func (db *DB) ListQueueEntries(ctx context.Context, queueID uuid.UUID) ([]QueueE
 	for rows.Next() {
 		var e QueueEntry
 		var helped pgtype.Timestamptz
-		if err := rows.Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.CreatedAt, &helped); err != nil {
+		if err := rows.Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.Note, &e.CreatedAt, &helped); err != nil {
 			return nil, err
 		}
 		if helped.Valid {
@@ -332,10 +333,10 @@ func (db *DB) QueueEntryByID(ctx context.Context, entryID uuid.UUID) (*QueueEntr
 	var e QueueEntry
 	var helped pgtype.Timestamptz
 	err := db.Pool.QueryRow(ctx,
-		`SELECT id, queue_id, display_name, created_at, helped_at
+		`SELECT id, queue_id, display_name, note, created_at, helped_at
 		 FROM queue_entries WHERE id = $1`,
 		entryID,
-	).Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.CreatedAt, &helped)
+	).Scan(&e.ID, &e.QueueID, &e.DisplayName, &e.Note, &e.CreatedAt, &helped)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
