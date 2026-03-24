@@ -183,7 +183,7 @@ export default function QueueDetail() {
                                     </>
                                   )}
                                   {e.display_name}
-                                  {e.note && <small> {e.note}</small>}
+                                  {e.note && <sub> {e.note}</sub>}
                                 </span>
                                 <span class="entry-meta">
                                   {done
