@@ -1,90 +1,91 @@
-import { createSignal, Show, onCleanup, onMount } from 'solid-js'
-import { useParams } from '@solidjs/router'
-import { joinQueue, getQueueMe, dismissStudentSession } from '../lib/api'
+import { createSignal, Show, onCleanup, onMount } from "solid-js";
+import { useParams } from "@solidjs/router";
+import { joinQueue, getQueueMe, dismissStudentSession } from "../lib/api";
 
 export default function Wait() {
-  const params = useParams()
-  const queueId = () => params.id
-  const [name, setName] = createSignal('')
-  const [err, setErr] = createSignal('')
-  const [joining, setJoining] = createSignal(false)
-  const [me, setMe] = createSignal(null)
-  const [doneMsg, setDoneMsg] = createSignal(false)
-  const [boot, setBoot] = createSignal(true)
+  const params = useParams();
+  const queueId = () => params.id;
+  const [name, setName] = createSignal("");
+  const [note, setNote] = createSignal("");
+  const [err, setErr] = createSignal("");
+  const [joining, setJoining] = createSignal(false);
+  const [me, setMe] = createSignal(null);
+  const [doneMsg, setDoneMsg] = createSignal(false);
+  const [boot, setBoot] = createSignal(true);
 
-  let pollTimer
+  let pollTimer;
 
   async function pollOnce() {
-    const id = queueId()
-    if (!id) return null
+    const id = queueId();
+    if (!id) return null;
     try {
-      const s = await getQueueMe(id)
-      setErr('')
+      const s = await getQueueMe(id);
+      setErr("");
       if (!s.authenticated) {
-        setMe(null)
-        return s
+        setMe(null);
+        return s;
       }
       if (s.helped) {
         try {
-          await dismissStudentSession(id)
+          await dismissStudentSession(id);
         } catch {
           /* cookies may already be cleared */
         }
-        setMe(null)
-        setDoneMsg(true)
-        stopPoll()
-        return s
+        setMe(null);
+        setDoneMsg(true);
+        stopPoll();
+        return s;
       }
-      setMe(s)
-      return s
+      setMe(s);
+      return s;
     } catch (e) {
       if (e.status === 401) {
-        setMe(null)
-        return null
+        setMe(null);
+        return null;
       }
-      setErr(e.message || 'Kunne ikke hente status')
-      return null
+      setErr(e.message || "Kunne ikke hente status");
+      return null;
     }
   }
 
   function startPoll() {
-    stopPoll()
+    stopPoll();
     pollTimer = window.setInterval(() => {
-      void pollOnce()
-    }, 2500)
+      void pollOnce();
+    }, 2500);
   }
 
   function stopPoll() {
     if (pollTimer) {
-      clearInterval(pollTimer)
-      pollTimer = undefined
+      clearInterval(pollTimer);
+      pollTimer = undefined;
     }
   }
 
-  onCleanup(stopPoll)
+  onCleanup(stopPoll);
 
   onMount(async () => {
-    const s = await pollOnce()
-    setBoot(false)
+    const s = await pollOnce();
+    setBoot(false);
     if (s?.authenticated && !s.helped) {
-      startPoll()
+      startPoll();
     }
-  })
+  });
 
   async function onJoin(e) {
-    e.preventDefault()
-    setErr('')
-    setJoining(true)
+    e.preventDefault();
+    setErr("");
+    setJoining(true);
     try {
-      await joinQueue(queueId(), name().trim())
-      const s = await pollOnce()
+      await joinQueue(queueId(), name().trim(), note());
+      const s = await pollOnce();
       if (s?.authenticated && !s.helped) {
-        startPoll()
+        startPoll();
       }
     } catch (e) {
-      setErr(e.message || 'Kunne ikke melde dig på')
+      setErr(e.message || "Kunne ikke melde dig på");
     } finally {
-      setJoining(false)
+      setJoining(false);
     }
   }
 
@@ -112,8 +113,8 @@ export default function Wait() {
             </p>
             <p class="muted small">
               {me()?.waiting_ahead === 0
-                ? 'Det er din tur snart.'
-                : `${me()?.waiting_ahead} person${me()?.waiting_ahead === 1 ? '' : 'er'} foran dig.`}
+                ? "Det er din tur snart."
+                : `${me()?.waiting_ahead} person${me()?.waiting_ahead === 1 ? "" : "er"} foran dig.`}
             </p>
           </div>
         </Show>
@@ -134,13 +135,26 @@ export default function Wait() {
                 maxLength={120}
               />
             </label>
+            <label class="field">
+              <span class="field-label">Note</span>
+              <input
+                class="input"
+                name="note"
+                placeholder="Fx 'Er ved lokale 1.20'"
+                value={note()}
+                onInput={(ev) => setNote(ev.currentTarget.value)}
+                required
+                minLength={1}
+                maxLength={120}
+              />
+            </label>
             {err() && <p class="form-error">{err()}</p>}
             <button class="btn btn-primary" type="submit" disabled={joining()}>
-              {joining() ? 'Melder på…' : 'Stil dig i kø'}
+              {joining() ? "Tilmelder..." : "Stil dig i kø"}
             </button>
           </form>
         </Show>
       </div>
     </main>
-  )
+  );
 }
