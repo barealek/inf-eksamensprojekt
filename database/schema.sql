@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS queue_entries (
     id UUID PRIMARY KEY,
     queue_id UUID NOT NULL REFERENCES queues (id) ON DELETE CASCADE,
     display_name TEXT NOT NULL,
+    note TEXT,
     student_secret TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     helped_at TIMESTAMPTZ
