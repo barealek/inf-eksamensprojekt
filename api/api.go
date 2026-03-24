@@ -350,6 +350,7 @@ func getQueue(db *database.DB) http.HandlerFunc {
 		type row struct {
 			ID          string  `json:"id"`
 			DisplayName string  `json:"display_name"`
+			Note        *string `json:"note"`
 			CreatedAt   string  `json:"created_at"`
 			HelpedAt    *string `json:"helped_at"`
 		}
@@ -363,6 +364,7 @@ func getQueue(db *database.DB) http.HandlerFunc {
 			out = append(out, row{
 				ID:          e.ID.String(),
 				DisplayName: e.DisplayName,
+				Note:        e.Note,
 				CreatedAt:   e.CreatedAt.UTC().Format(time.RFC3339),
 				HelpedAt:    helped,
 			})
@@ -411,7 +413,11 @@ func postQueueJoin(db *database.DB) http.HandlerFunc {
 			http.Error(w, "server error", http.StatusInternalServerError)
 			return
 		}
-		entry, err := db.AddQueueEntry(r.Context(), qid, body.Name, body.Note, secret)
+		var note = new(string)
+		if body.Note != "" {
+			*note = strings.TrimSpace(body.Note)
+		}
+		entry, err := db.AddQueueEntry(r.Context(), qid, body.Name, note, secret)
 		if err != nil {
 			log.Printf("AddQueueEntry: %v", err)
 			http.Error(w, "server error", http.StatusInternalServerError)

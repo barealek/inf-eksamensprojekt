@@ -182,7 +182,7 @@ export default function QueueDetail() {
                                       <small>{place}.</small>{" "}
                                     </>
                                   )}
-                                  {e.display_name} — {e.note}
+                                  {e.display_name} {e.note ? "— " + e.note : ""}
                                 </span>
                                 <span class="entry-meta">
                                   {done

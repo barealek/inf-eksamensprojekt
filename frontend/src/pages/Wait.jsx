@@ -132,7 +132,7 @@ export default function Wait() {
                 onInput={(ev) => setName(ev.currentTarget.value)}
                 required
                 minLength={1}
-                maxLength={120}
+                maxLength={30}
               />
             </label>
             <label class="field">
@@ -143,9 +143,7 @@ export default function Wait() {
                 placeholder="Fx 'Er ved lokale 1.20'"
                 value={note()}
                 onInput={(ev) => setNote(ev.currentTarget.value)}
-                required
-                minLength={1}
-                maxLength={120}
+                maxLength={30}
               />
             </label>
             {err() && <p class="form-error">{err()}</p>}

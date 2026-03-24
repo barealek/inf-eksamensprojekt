@@ -229,13 +229,13 @@ type QueueEntry struct {
 	ID          uuid.UUID
 	QueueID     uuid.UUID
 	DisplayName string
-	Note        string
+	Note        *string
 	CreatedAt   time.Time
 	HelpedAt    *time.Time
 }
 
 // AddQueueEntry appends a student; studentSecret is stored for later cookie checks.
-func (db *DB) AddQueueEntry(ctx context.Context, queueID uuid.UUID, displayName, note, studentSecret string) (*QueueEntry, error) {
+func (db *DB) AddQueueEntry(ctx context.Context, queueID uuid.UUID, displayName string, note *string, studentSecret string) (*QueueEntry, error) {
 	id := uuid.New()
 	var e QueueEntry
 	err := db.Pool.QueryRow(ctx,
