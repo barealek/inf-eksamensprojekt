@@ -32,6 +32,7 @@ func Register(mux *http.ServeMux, db *database.DB) {
 	mux.HandleFunc("GET /queues", getQueuesList(db))
 	mux.HandleFunc("POST /queues/new", postQueuesNew(db))
 	mux.HandleFunc("GET /queues/{id}/me", getQueueMe(db))
+	mux.HandleFunc("PATCH /queues/{id}/note", patchQueueNote(db))
 	mux.HandleFunc("POST /queues/{id}/student/dismiss", postStudentDismiss(db))
 	mux.HandleFunc("GET /queues/{id}", getQueue(db))
 	mux.HandleFunc("POST /queues/{id}/join", postQueueJoin(db))
@@ -249,6 +250,55 @@ func getQueueMe(db *database.DB) http.HandlerFunc {
 			"waiting_ahead": ahead,
 			"total_waiting": total,
 		})
+	}
+}
+
+func patchQueueNote(db *database.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		qid, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "invalid queue id", http.StatusBadRequest)
+			return
+		}
+		eid, ok, err := StudentFromRequest(r.Context(), db, r)
+		if err != nil {
+			if errors.Is(err, ErrInvalidStudentCookie) {
+				clearStudentCookies(w)
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"status": "cleared"})
+				return
+			}
+			log.Printf("StudentFromRequest: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if !ok {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		entry, err := db.QueueEntryByID(r.Context(), eid)
+		if err != nil {
+			log.Printf("QueueEntryByID: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		if entry.QueueID != qid {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		var body = struct {
+			Note string `json:"note"`
+		}{}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "invalid request", http.StatusBadRequest)
+			return
+		}
+		if _, err := db.UpdateQueueEntryNote(r.Context(), eid, body.Note); err != nil {
+			log.Printf("UpdateQueueEntry: %v", err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
 }
 

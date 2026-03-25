@@ -296,6 +296,23 @@ func (db *DB) MarkEntryHelped(ctx context.Context, queueID, entryID uuid.UUID) (
 	return true, nil
 }
 
+func (db *DB) UpdateQueueEntryNote(ctx context.Context, queueID uuid.UUID, note string) (ok bool, err error) {
+	var id uuid.UUID
+	err = db.Pool.QueryRow(ctx,
+		`UPDATE queue_entries SET note = $1
+		 WHERE queue_id = $2
+		 RETURNING id`,
+		note, queueID,
+	).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // QueueSummary is a queue row with a waiting count for teacher dashboards.
 type QueueSummary struct {
 	ID        uuid.UUID
