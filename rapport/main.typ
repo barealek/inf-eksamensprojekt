@@ -1,3 +1,8 @@
+#import "@preview/wordometer:0.1.5": word-count, total-words
+#show: word-count
+#let totals
+
+
 #set document(
   title: "Digitalt køsystem til lærervejledning",
   author: "Aleksander Rist",
@@ -20,10 +25,6 @@
   leading: 0.65em,
 )
 
-#import "@preview/numbly:0.1.0": numbly
-#set heading(
-  numbering: "1.1 "
-)
 
 // Heading styling
 #show heading.where(level: 1): it => {
@@ -68,11 +69,9 @@
       box(width: 16pt)[
         #line.number
       ],
-      line.body,
+      line.body
     ))
-  ] else [
-    #line.body
-  ]
+  ] else [#line.body]
 }
 
 // =========================
@@ -138,12 +137,14 @@
       ]
 
       #text(size: 10pt)[
-        Tegn: 35.675 \
+        Tegn: #totals \
         Sider: 19
       ]
     ]
   )
 ]
+
+#include "resume.typ"
 
 // =========================
 // TABLE OF CONTENTS
@@ -168,6 +169,10 @@
 #include "pf.typ"
 #include "arbejdsspørgsmål.typ"
 
+#set heading(
+  numbering: "1.1 "
+)
+
 // =========================
 // MAIN CONTENT
 // =========================
@@ -176,12 +181,10 @@
 #set page(numbering: "1 / 1", number-align: end)
 #counter(page).update(1)
 
-// #include "sections/introduktion.typ"
-// #include "sections/redegørelse.typ"
-// #include "sections/analyse.typ"
-// #include "sections/diskussion.typ"
-// #include "sections/konklusion.typ"
-
+#word-count(total => [
+  #totals = #total.characters
+  #include "hoveddel.typ"
+])
 
 // Bibliografi
 // #include "biblio.typ"

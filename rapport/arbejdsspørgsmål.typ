@@ -1,5 +1,5 @@
-== Svar på arbejdsspørgsmål
-For at guide hen imod, hvordan applikationen teknisk skal implementeres, svarer vi på
+== Arbejdsspørgsmål
+For at guide hen imod, hvordan applikationen teknisk skal implementeres, er der opstillet nogle spørgsmål som der besvares
 
 === Hvordan kan man implementere realtidskommunikation, så køen opdateres omgående på elevernes enheder?
 For at få realtidskommunikation kan man bruge en protokol kaldet Websockets. Websockets muliggør det at åbne en kanal som tillader tovejs-kommunikation, ligesom TCP. @mdn:websockets
@@ -15,6 +15,6 @@ For at sikre at kun de rigtige personer har adgang til at administrere, laver vi
 Dette løses også igennem cookies. Når elever skriver deres navn og tilføjer dem selv til en kø, oprettes en secret som sættes i en cookie. Den secret kan vi tjekke om er rigtig i hver af de følgende requests, og vi behøver ikke at opbevare mere information end deres navn.
 
 === Hvordan kan man håndtere og rydde op i data, så gamle køer, navne mv. slettes automatisk efter en vis periode?
-Vi holder styr på, hvornår alle køer og deres navne blev oprettet, hvornår køen stoppede mv.. Derefter kan man eksempelvis køre et job hver dag, som læser alle køer igennem og sletter dem, som eksempelvis er ældre end 14 dage.
+Man kunne holde styr på, hvornår alle køer og deres navne blev oprettet, hvornår køen stoppede mv., og derefter køre et job hver dag, som læser alle køer igennem og sletter dem, som eksempelvis er ældre end 14 dage.
 
-Derudover kan man også tracke, hvor længe siden læreren sidst interagerede med hjemmesiden. Det kunne f.eks. være et LastLogin kolonne i databasen på hver bruger. Herefter kan vi som ovenfor også kører et job en gang om dagen.
+For at gøre alt data så ephemeral som muligt, vælger jeg i stedet for at binde køerne i databasen til en lærer session, i stedet for en lærer selv. Dvs., når de logger ud eller deres session invalideres, kan man ikke længere tilgå de køer med videre, som læreren havde oprettet, da det er gemt på sessionen.
