@@ -182,7 +182,7 @@
 #counter(page).update(1)
 
 #word-count(total => [
-  #totals = #total.characters
+  #(total.characters/2400) sider
   #include "hoveddel.typ"
 ])
 
