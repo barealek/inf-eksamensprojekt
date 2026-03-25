@@ -1,6 +1,6 @@
 import { createSignal, Show, onCleanup, onMount } from "solid-js";
 import { useParams } from "@solidjs/router";
-import { joinQueue, getQueueMe, dismissStudentSession } from "../lib/api";
+import { joinQueue, getQueueMe, dismissStudentSession, updateNote } from "../lib/api";
 
 export default function Wait() {
   const params = useParams();
@@ -12,6 +12,8 @@ export default function Wait() {
   const [me, setMe] = createSignal(null);
   const [doneMsg, setDoneMsg] = createSignal(false);
   const [boot, setBoot] = createSignal(true);
+  const [editingNote, setEditingNote] = createSignal(false);
+  const [updatingNote, setUpdatingNote] = createSignal(false);
 
   let pollTimer;
 
@@ -89,6 +91,21 @@ export default function Wait() {
     }
   }
 
+  async function onUpdateNote(e) {
+    e.preventDefault();
+    setErr("");
+    setUpdatingNote(true);
+    try {
+      await updateNote(queueId(), note());
+      setEditingNote(false);
+      await pollOnce();
+    } catch (e) {
+      setErr(e.message || "Kunne ikke opdatere note");
+    } finally {
+      setUpdatingNote(false);
+    }
+  }
+
   return (
     <main class="page page--narrow">
       <div class="card">
@@ -116,6 +133,43 @@ export default function Wait() {
                 ? "Det er din tur snart."
                 : `${me()?.waiting_ahead} person${me()?.waiting_ahead === 1 ? "" : "er"} foran dig.`}
             </p>
+            <Show when={editingNote()}>
+              <form class="form" onSubmit={onUpdateNote}>
+                <label class="field">
+                  <span class="field-label">Note</span>
+                  <input
+                    class="input"
+                    name="note"
+                    placeholder="Fx 'Er ved lokale 1.20'"
+                    value={note()}
+                    onInput={(ev) => setNote(ev.currentTarget.value)}
+                    maxLength={30}
+                  />
+                </label>
+                {err() && <p class="form-error">{err()}</p>}
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <button class="btn btn-primary" type="submit" disabled={updatingNote()}>
+                    {updatingNote() ? "Gemmer..." : "Gem"}
+                  </button>
+                  <button class="btn" type="button" onClick={() => setEditingNote(false)}>
+                    Annuller
+                  </button>
+                </div>
+              </form>
+            </Show>
+            <Show when={!editingNote() && me()?.note}>
+              <div style={{ display: "flex", gap: "0.5rem", "align-items": "center", "margin-top": "0.5rem" }}>
+                <p class="muted small" style={{ margin: 0 }}>Note: {me()?.note}</p>
+                <button class="btn" type="button" onClick={() => setEditingNote(true)} style={{ padding: "0.25rem 0.5rem", "font-size": "0.875rem" }}>
+                  Rediger
+                </button>
+              </div>
+            </Show>
+            <Show when={!editingNote() && !me()?.note}>
+              <button class="btn" type="button" onClick={() => setEditingNote(true)} style={{ "margin-top": "0.5rem", padding: "0.25rem 0.5rem", "font-size": "0.875rem" }}>
+                Tilføj note
+              </button>
+            </Show>
           </div>
         </Show>
 

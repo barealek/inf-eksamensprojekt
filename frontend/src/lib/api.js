@@ -81,3 +81,10 @@ export function dismissStudentSession(queueId) {
     body: "{}",
   });
 }
+
+export function updateNote(queueId, note) {
+  return apiFetch(`/queues/${queueId}/note`, {
+    method: "PATCH",
+    body: JSON.stringify({ note }),
+  });
+}
