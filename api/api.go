@@ -293,7 +293,7 @@ func patchQueueNote(db *database.DB) http.HandlerFunc {
 			http.Error(w, "invalid request", http.StatusBadRequest)
 			return
 		}
-		if _, err := db.UpdateQueueEntryNote(r.Context(), eid, body.Note); err != nil {
+		if _, err := db.UpdateQueueEntryNote(r.Context(), entry.ID, body.Note); err != nil {
 			log.Printf("UpdateQueueEntry: %v", err)
 			http.Error(w, "server error", http.StatusInternalServerError)
 			return
