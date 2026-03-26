@@ -1,7 +1,9 @@
 = Dokumentation af udvikling
 
 == Systembeskrivelse
-Løsningen er en webapplikation bygget på trelagsmodellen, som lader lærere oprette en digital vejlednings-kø, og elever kan tilmelde dem selv digitalt, holde styr på deres plads og lave en note.
+Løsningen er en webapplikation bygget på trelagsmodellen, som lader lærere oprette en digital vejlednings-kø, og elever kan tilmelde dem selv digitalt og løbende holde styr på deres plads i køen.
+
+Løsningen er bygget med PostgresSQL som datalag, en Golang HTTP API som logiklag og en React/SolidJS frontend som præsentationslag. Brugerne får serveret hele React/SolidJS applikationen ned, som er bygget til at interagere med API'et.
 
 == Arkitektur
 Nedenfor er der et blokdiagram af, hvordan applikationens arkitektur er skruet sammen.
@@ -39,12 +41,13 @@ API'et er struktureret efter REST-principperne. Det eksponerer følgende endpoin
 - POST /auth/login - Login og session-oprettelse
 - GET /queues - List alle køer for den lærer der er logget ind
 - POST /queues/new - Opret ny kø for den lærer der er logget ind
-- GET /queues/{id} - Hent kø med entries
-- POST /queues/{id}/join - Elever tilmelder sig kø
-- POST /queues/{id}/mark-helped - Marker elev som hjulpet
+- GET /queues/{id} - Hent kø med alle entries. Kræver lærer session
+- POST /queues/{id}/join - Elever tilmelder sig køen
+- POST /queues/{id}/mark-helped - Marker elev som hjulpet. Kræver lærer session
 
 
 == Sikkerhed
+=== Session-cookies
 For at sikre at kun de rigtige personer har adgang til at gøre hvad de har brug for, laver jeg et cookie-baseret session system. Når lærere logger ind, opretter jeg en session med deres bruger i et separat table. Ved hver request, sikrer jeg at den session stadig er valid, og jeg kan også få deres bruger.
 
 Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgangskode, kører jeg en hashing algorithme, som er en irreversibel matematisk funktion over plaintext koden for at gøre den ulæsbar. Når lærere forsøger at logge ind, kører jeg samme algoritme over deres givne adgangskode og ser om de stemmer overens. Golang har et bibliotek kaldet `golang.org/x/crypto/bcrypt` som hjælper med hashingfunktioner med videre, så det er det, der bruges i applikationen.
@@ -53,6 +56,8 @@ Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgan
   #image("billeder/hashing-flow.png", width: 66%)
 ]
 
+=== Firewall
+Når jeg har deployet i skyen, har jeg sikret at databasen kun kan tilgås fra den server, som kører API'et. Den eneste port, som er åbnet op til internettet er HTTPS-porten til API'et.
 
 == Database
 Som beskrevet tidligere, bruger jeg i projektet Postgres som SQL-database. Den kan i princippet erstattes med en vilkårlig SQL database, da der ikke bruges Postgres-specifikke funktioner i projektet.
