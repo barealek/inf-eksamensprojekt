@@ -71,7 +71,7 @@
       ],
       line.body
     ))
-  ] else [#box(fill:rgb(150,150,150), outset: 1pt, radius: 2pt, )[#box(fill:rgb(240,240,240), outset: 0.5pt, radius: 1.5pt, )[#line.body]]]
+  ] else [#box(fill:rgb(150,150,150), outset: (x: 1.5pt, y:3.25pt), radius: 2pt, )[#box(fill:rgb(240,240,240), outset: (x: 1.25pt, y:3pt), radius: 1.75pt, )[#line.body]]]
 }
 
 // =========================

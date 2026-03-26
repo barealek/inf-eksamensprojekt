@@ -48,19 +48,6 @@ API'et er struktureret efter REST-principperne. Det eksponerer følgende endpoin
 Fra vores præsentationslag, som er vores javascript-kode, bruger vi `fetch()` funktionen til at kalde disse endpoints programmatisk.
 
 
-== Sikkerhed
-=== Session-cookies
-For at sikre at kun de rigtige personer har adgang til at gøre hvad de har brug for, laver jeg et cookie-baseret session system. Når lærere logger ind, opretter jeg en session med deres bruger i et separat table. Ved hver request, sikrer jeg at den session stadig er valid, og jeg kan også få deres bruger.
-
-Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgangskode, kører jeg en hashing algorithme, som er en irreversibel matematisk funktion over plaintext koden for at gøre den ulæsbar. Når lærere forsøger at logge ind, kører jeg samme algoritme over deres givne adgangskode og ser om de stemmer overens. Golang har et bibliotek kaldet `golang.org/x/crypto/bcrypt` som hjælper med hashingfunktioner med videre, så det er det, der bruges i applikationen.
-
-#align(center)[
-  #image("billeder/hashing-flow.png", width: 66%)
-]
-
-=== Firewall
-Når jeg har deployet i skyen, har jeg sikret at databasen kun kan tilgås fra den server, som kører API'et. Den eneste port, som er åbnet op til internettet er HTTPS-porten til API'et.
-
 == Database
 Som beskrevet tidligere, bruger jeg i projektet Postgres som SQL-database. Den kan i princippet erstattes med en vilkårlig SQL database, da der ikke bruges Postgres-specifikke funktioner i projektet.
 
@@ -73,13 +60,33 @@ En vigtig detalje ved dette database skema er, at relationen fra `teacher_sessio
 Ved at lave den kaskadedefinition på databasepolitikken kan jeg nemt rydde op i alt data, der har med en kø at gøre, ved bare at slette deres session i databasen.
 
 
+== Sikkerhed
+=== Session-cookies
+For at sikre at kun de rigtige personer har adgang til at gøre hvad de har brug for, laver jeg et cookie-baseret session system. Når lærere logger ind, opretter jeg en session med deres bruger i et separat table kaldet `teacher_sessions`. Ved hver request, sikrer jeg at den session stadig er valid:
+
+#align(center)[
+  #image("billeder/validering-flow.png", width: 66%)
+]
+
+Herefter kan jeg få deres bruger fra rækken som repræsenterer sessionen i tabellen vha. den relation som er beskrevet i ER-diagrammet mellem .
+
+Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgangskode, kører jeg en hashing algorithme, som er en irreversibel matematisk funktion over plaintext koden for at gøre den ulæsbar. Når lærere forsøger at logge ind, kører jeg samme algoritme over deres givne adgangskode og ser om de stemmer overens. Golang har et bibliotek kaldet `golang.org/x/crypto/bcrypt` som hjælper med hashingfunktioner med videre, så det er det, der bruges i applikationen.
+
+#align(center)[
+  #image("billeder/hashing-flow.png", width: 66%)
+]
+
+=== Firewall
+Når jeg deployer applikationen så den er tilgængenligt til internettet, sikrer jeg at databasen kun kan tilgås fra den server, som kører API'et. Den eneste port, som er åbnet op til internettet skal være HTTPS-porten til API'et.
+
+
 == Grafiske design
 Jeg har lavet et udkast til designet med wireframes, hvor jeg skitserer layoutet for både telefonbrug og
 
 Designet er lavet så det overholder gestaltlovene, mere præcist loven om nærhed og loven om lukkethed.
 
 #align(center)[
-  #image("billeder/layout.png")
+  #image("billeder/layout-lærer.png")
 ]
 
 På den primære kø-side for lærerne er der to lukkede bokse. Den ene indeholder information om at tilmelde sig til køen som elev, og den holder en liste af elever i kø elever, der tidligere har fået hjælp i køen.
@@ -88,3 +95,9 @@ Disse informationer holder vi tæt på hinanden, samtidig med at de er visuelt s
 Designet er i relativ stor grad bygget med hjælp fra Copilot, da den er god til design givet de rigtige instrukser. Jeg har vedhæftet den mine wireframes, hvorefter den har genereret CSS.
 
 == Tests
+
+
+== Shortcomings
+
+- Notifikationer
+- Delete CRON-job
