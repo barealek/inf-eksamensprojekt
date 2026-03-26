@@ -1,9 +1,9 @@
-= Projektuddybning
+= Funktionsbeskrivelse
 
 == Systembeskrivelse
-Løsningen er en webapplikation bygget på trelagsmodellen, som lader lærere oprette en digital vejlednings-kø, og elever kan tilmelde dem selv digitalt og løbende holde styr på deres plads i køen.
+Løsningen skal være en webapplikation bygget på trelagsmodellen, som lader lærere oprette en digital vejlednings-kø, og elever kan tilmelde dem selv digitalt og løbende holde styr på deres plads i køen.
 
-Løsningen er bygget med PostgresSQL som datalag, en Golang HTTP API som logiklag og en React/SolidJS frontend som præsentationslag. Brugerne får serveret hele React/SolidJS applikationen ned, som er bygget til at interagere med API'et.
+Løsningen skal bygges med PostgresSQL som datalag, en Golang HTTP API som logiklag og en React/SolidJS frontend som præsentationslag. Brugerne får serveret hele React/SolidJS applikationen ned, som er bygget til at interagere med API'et.
 
 == Kravspecifikation
 Essentielle krav:
@@ -89,7 +89,7 @@ go func() {
 }()
 ```
 
-Funktionen `DeleteOldTeacherSessions` afvikler
+Funktionen `DeleteOldTeacherSessions` afvikler simpeltnok bare dette SQL statement: `DELETE FROM teacher_sessions WHERE created_at < NOW() - INTERVAL '72 hours'`.
 
 == Sikkerhed
 === Session-cookies
@@ -135,7 +135,7 @@ På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste inform
 
 #align(center)[
   #rotate(90deg, [
-    #image("billeder/layout-elev.jpg", height: 66%)
+    #image("billeder/layout-elev.jpg", height: 90%)
   ], reflow:true)
   Bilag x: Færdige layout af lærersiden
 ]
