@@ -1,10 +1,22 @@
-= Dokumentation af udvikling
+= Projektuddybning
 
 == Systembeskrivelse
 Løsningen er en webapplikation bygget på trelagsmodellen, som lader lærere oprette en digital vejlednings-kø, og elever kan tilmelde dem selv digitalt og løbende holde styr på deres plads i køen.
 
 Løsningen er bygget med PostgresSQL som datalag, en Golang HTTP API som logiklag og en React/SolidJS frontend som præsentationslag. Brugerne får serveret hele React/SolidJS applikationen ned, som er bygget til at interagere med API'et.
 
+== Kravspecifikation
+Essentielle krav:
+- Systemet skal tillade lærere at logge ind på sikker vis.
+- Systemet skal tillade lærere at oprette køer samt lade dem markere elever hjulpet.
+- Systemet skal kunne huske elever når de er i kø, selvom de lukker deres fane.
+- Systemet skal rydde op i data efterhånden som de forældes (72 timer).
+- Systemet skal være tæt på realtime, så elevernes position hurtigst muligt bliver opdateret på deres enhed.
+
+Testkrav:
+- Interfacet skal være intuitivt.
+
+= Dokumentation af programmet
 == Arkitektur
 Nedenfor er der et blokdiagram af, hvordan applikationens arkitektur er skruet sammen.
 #align(center)[
@@ -59,6 +71,25 @@ Nedenfor er der en visualisering af programmets database.
 En vigtig detalje ved dette database skema er, at relationen fra `teacher_sessions:id` til `queues:teacher_session_id` og relationen fra `queues:id` til `queue_entries:queue_id` er defineret som `ON DELETE CASCADE`. Det betyder, at når jeg invaliderer og dermed sletter vores teacher session, slettes alle køer + alle kø-entries som har noget med den teacher session at gøre.
 Ved at lave den kaskadedefinition på databasepolitikken kan jeg nemt rydde op i alt data, der har med en kø at gøre, ved bare at slette deres session i databasen.
 
+=== Oprydning i data
+
+Som beskrevet ovenfor kan vi rydde op i alt relevant data, ved blot at slette lærerens session.
+Derfor programmerer jeg en separat routine i mit API, som hver dag leder efter lærersessioner som er ældre end tre døgn:
+
+```go
+go func() {
+	for {
+		now := time.Now()
+		next := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.Local)
+		time.Sleep(time.Until(next))
+		if err := db.DeleteOldTeacherSessions(context.Background()); err != nil {
+			log.Printf("session cleanup: %v", err)
+		}
+	}
+}()
+```
+
+Funktionen `DeleteOldTeacherSessions` afvikler
 
 == Sikkerhed
 === Session-cookies
@@ -66,6 +97,7 @@ For at sikre at kun de rigtige personer har adgang til at gøre hvad de har brug
 
 #align(center)[
   #image("billeder/validering-flow.png", width: 66%)
+  Bilag x: valideringsflow
 ]
 
 Herefter kan jeg få deres bruger fra rækken som repræsenterer sessionen i tabellen vha. den relation som er beskrevet i ER-diagrammet mellem .
@@ -74,6 +106,7 @@ Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgan
 
 #align(center)[
   #image("billeder/hashing-flow.png", width: 66%)
+  Bilag x: flow til hashing af adgangskoder
 ]
 
 === Firewall
@@ -81,23 +114,31 @@ Når jeg deployer applikationen så den er tilgængenligt til internettet, sikre
 
 
 == Grafiske design
-Jeg har lavet et udkast til designet med wireframes, hvor jeg skitserer layoutet for både telefonbrug og
-
-Designet er lavet så det overholder gestaltlovene, mere præcist loven om nærhed og loven om lukkethed.
+Jeg har lavet et udkast til designet med skitser og wireframes, hvor jeg skitserer layoutet for både telefonbrug og lærerbrug.
 
 #align(center)[
-  #image("billeder/layout-lærer.png")
+  #image("billeder/skitse-af-lærerside.jpg", width: 66%)
+  Bilag x: Skitse af lærerside
 ]
+
+Designet er lavet så det overholder gestaltlovene, mere præcist loven om nærhed og loven om lukkethed.
 
 På den primære kø-side for lærerne er der to lukkede bokse. Den ene indeholder information om at tilmelde sig til køen som elev, og den holder en liste af elever i kø elever, der tidligere har fået hjælp i køen.
 Disse informationer holder vi tæt på hinanden, samtidig med at de er visuelt separeret i to bokse med en lidt dæmpet baggrund.
 
+#align(center)[
+  #image("billeder/layout-lærer.png", width: 66%)
+  Bilag x: Færdige layout af lærersiden
+]
+
+På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste informationer til eleven. Den holdes simpel med vilje.
+
+#align(center)[
+  #rotate(90deg, [
+    #image("billeder/layout-elev.jpg", height: 66%)
+  ], reflow:true)
+  Bilag x: Færdige layout af lærersiden
+]
+
+
 Designet er i relativ stor grad bygget med hjælp fra Copilot, da den er god til design givet de rigtige instrukser. Jeg har vedhæftet den mine wireframes, hvorefter den har genereret CSS.
-
-== Tests
-
-
-== Shortcomings
-
-- Notifikationer
-- Delete CRON-job

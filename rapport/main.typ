@@ -1,3 +1,5 @@
+#include "erklæring.typ"
+
 #import "@preview/wordometer:0.1.5": word-count, total-words
 #show: word-count
 #let totals
@@ -28,7 +30,8 @@
 
 // Heading styling
 #show heading.where(level: 1): it => {
-  pagebreak(weak: true)
+  // pagebreak(weak: true)
+  v(4em, weak:true)
   set text(size: 22pt, weight: "bold")
   block(
     above: 1.5em,
@@ -144,6 +147,8 @@
   )
 ]
 
+#let pb=pagebreak
+#pb()
 #include "resume.typ"
 
 // =========================
@@ -165,26 +170,24 @@
   depth: 2,
 )
 
-// Problemformulering
-#include "pf.typ"
-
 #set heading(
   numbering: "1.1 "
 )
+#set page(numbering: "1 / 1", number-align: end)
+#counter(page).update(1)
+
+
+#include "pf.typ"
+#include "funktionsbeskrivelse.typ"
 
 // =========================
 // MAIN CONTENT
 // =========================
 #pagebreak()
 
-#set page(numbering: "1 / 1", number-align: end)
-#counter(page).update(1)
-
-#word-count(total => [
-  #(total.characters/2400) sider
-  #include "arbejdsspørgsmål.typ"
-  #include "hoveddel.typ"
-])
+// #include "arbejdsspørgsmål.typ"
+#include "hoveddel.typ"
+#include "tests.typ"
 
 // Bibliografi
 // #include "biblio.typ"
@@ -194,5 +197,5 @@
 = Bibliografi
 #bibliography("kilder.bib", style: "harvard-cite-them-right")
 
-= Bilag
+// = Bilag
 // #include "bilag.typ"
