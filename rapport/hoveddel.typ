@@ -139,6 +139,3 @@ På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste inform
   ], reflow:true)
   Bilag x: Færdige layout af lærersiden
 ]
-
-
-Designet er i relativ stor grad bygget med hjælp fra Copilot, da den er god til design givet de rigtige instrukser. Jeg har vedhæftet den mine wireframes, hvorefter den har genereret CSS.
