@@ -1,4 +1,4 @@
-== Arbejdsspørgsmål
+= Arbejdsspørgsmål
 For at guide hen imod, hvordan applikationen teknisk skal implementeres, er der opstillet nogle spørgsmål som der besvares
 
 === Hvordan kan man implementere realtidskommunikation, så køen opdateres omgående på elevernes enheder?

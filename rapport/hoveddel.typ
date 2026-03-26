@@ -12,7 +12,7 @@ Nedenfor er der et blokdiagram af, hvordan applikationens arkitektur er skruet s
 ]
 
 Vi har defineret en server som består af primært to forskellige services. En database, som i dette projekt er en Postgres-database, og en API.
-API'ets opgave er dels at servere vores statiske filer, som vi bygger fra frontenden med `Docker build`, men dens primære opgave er at opføre sig som vores logiklag.
+API'ets opgave er dels at servere vores statiske filer, som vi bygger fra frontenden med `docker build`, men dens primære opgave er at opføre sig som vores logiklag.
 
 Når brugeren skal have data, sender den en HTTP(S)-anmodning til vores server som ender hos vores API. API'et interagerer med Postgres SQL-databasen vha. TCP på et internt netværk, læser brugerens cookies, tjekker om session-cookien er valid og om brugeren har rettigheder til at gøre det, de forsøger.
 
@@ -45,6 +45,8 @@ API'et er struktureret efter REST-principperne. Det eksponerer følgende endpoin
 - POST /queues/{id}/join - Elever tilmelder sig køen
 - POST /queues/{id}/mark-helped - Marker elev som hjulpet. Kræver lærer session
 
+Fra vores præsentationslag, som er vores javascript-kode, bruger vi `fetch()` funktionen til at kalde disse endpoints programmatisk.
+
 
 == Sikkerhed
 === Session-cookies
@@ -71,9 +73,18 @@ En vigtig detalje ved dette database skema er, at relationen fra `teacher_sessio
 Ved at lave den kaskadedefinition på databasepolitikken kan jeg nemt rydde op i alt data, der har med en kø at gøre, ved bare at slette deres session i databasen.
 
 
-
-
 == Grafiske design
-Gestaltlovene
+Jeg har lavet et udkast til designet med wireframes, hvor jeg skitserer layoutet for både telefonbrug og
+
+Designet er lavet så det overholder gestaltlovene, mere præcist loven om nærhed og loven om lukkethed.
+
+#align(center)[
+  #image("billeder/layout.png")
+]
+
+På den primære kø-side for lærerne er der to lukkede bokse. Den ene indeholder information om at tilmelde sig til køen som elev, og den holder en liste af elever i kø elever, der tidligere har fået hjælp i køen.
+Disse informationer holder vi tæt på hinanden, samtidig med at de er visuelt separeret i to bokse med en lidt dæmpet baggrund.
+
+Designet er i relativ stor grad bygget med hjælp fra Copilot, da den er god til design givet de rigtige instrukser. Jeg har vedhæftet den mine wireframes, hvorefter den har genereret CSS.
 
 == Tests
