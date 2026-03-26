@@ -61,6 +61,18 @@ func main() {
 		_ = srv.Shutdown(shutdownCtx)
 	}()
 
+	// Dagligt ryd op i gamle lærer sessions
+	go func() {
+		for {
+			now := time.Now()
+			next := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.Local)
+			time.Sleep(time.Until(next))
+			if err := db.DeleteOldTeacherSessions(context.Background()); err != nil {
+				log.Printf("session cleanup: %v", err)
+			}
+		}
+	}()
+
 	log.Printf("listening on %s", srv.Addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)

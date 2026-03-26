@@ -134,6 +134,14 @@ type TeacherSession struct {
 	CreatedAt time.Time
 }
 
+// DeleteOldTeacherSessions removes teacher sessions older than 72 hours.
+func (db *DB) DeleteOldTeacherSessions(ctx context.Context) error {
+	_, err := db.Pool.Exec(ctx,
+		`DELETE FROM teacher_sessions WHERE created_at < NOW() - INTERVAL '72 hours'`,
+	)
+	return err
+}
+
 // CreateTeacherSession inserts a new session for a teacher.
 func (db *DB) CreateTeacherSession(ctx context.Context, teacherID uuid.UUID, token string) (*TeacherSession, error) {
 	id := uuid.New()
