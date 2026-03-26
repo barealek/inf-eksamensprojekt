@@ -296,13 +296,13 @@ func (db *DB) MarkEntryHelped(ctx context.Context, queueID, entryID uuid.UUID) (
 	return true, nil
 }
 
-func (db *DB) UpdateQueueEntryNote(ctx context.Context, queueID uuid.UUID, note string) (ok bool, err error) {
+func (db *DB) UpdateQueueEntryNote(ctx context.Context, entryID uuid.UUID, note string) (ok bool, err error) {
 	var id uuid.UUID
 	err = db.Pool.QueryRow(ctx,
 		`UPDATE queue_entries SET note = $1
-		 WHERE queue_id = $2
+		 WHERE id = $2
 		 RETURNING id`,
-		note, queueID,
+		note, entryID,
 	).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
