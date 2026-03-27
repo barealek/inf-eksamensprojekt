@@ -88,3 +88,10 @@ export function updateNote(queueId, note) {
     body: JSON.stringify({ note }),
   });
 }
+
+export function register(username, password) {
+  return apiFetch("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
+}
