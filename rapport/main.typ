@@ -138,15 +138,14 @@
       ]
 
       #text(size: 10pt)[
-        Tegn: 0 \
-        Sider: 19
+        Tegn: 6818 \
+        Sider: 56
       ]
     ]
   )
 ]
 
-#let pb=pagebreak
-#pb()
+#pagebreak()
 #include "resume.typ"
 
 // =========================
@@ -181,13 +180,10 @@
 // MAIN CONTENT
 // =========================
 #pagebreak()
-#word-count((totals) => [
-  #totals.characters
-  #include "hoveddel.typ"
-  #pagebreak()
-  #include "tests.typ"
-  #pagebreak()
-  #include "konklusion.typ"
-])
+#include "hoveddel.typ"
+#include "tests.typ"
+#pagebreak()
+#include "konklusion.typ"
 
+#pagebreak()
 #include "bilag.typ"
