@@ -131,11 +131,4 @@ Disse informationer holder vi tæt på hinanden, samtidig med at de er visuelt s
   Bilag x: Færdige layout af lærersiden
 ]
 
-På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste informationer til eleven. Den holdes simpel med vilje.
-
-#align(center)[
-  #rotate(90deg, [
-    #image("billeder/layout-elev.jpg", height: 90%)
-  ], reflow:true)
-  Bilag x: Færdige layout af lærersiden
-]
+På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste informationer til eleven. Den holdes simpel med vilje. (se bilag 6)

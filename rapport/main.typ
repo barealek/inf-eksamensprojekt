@@ -2,8 +2,6 @@
 
 #import "@preview/wordometer:0.1.5": word-count, total-words
 #show: word-count
-#let totals
-
 
 #set document(
   title: "Digitalt køsystem til lærervejledning",
@@ -140,7 +138,7 @@
       ]
 
       #text(size: 10pt)[
-        Tegn: #totals \
+        Tegn: 0 \
         Sider: 19
       ]
     ]
@@ -178,24 +176,21 @@
 
 
 #include "pf.typ"
-// #include "funktionsbeskrivelse.typ"
 
 // =========================
 // MAIN CONTENT
 // =========================
 #pagebreak()
+#word-count((totals) => [
+  #totals.characters
+  #include "hoveddel.typ"
+  #include "tests.typ"
+])
 
-// #include "arbejdsspørgsmål.typ"
-#include "hoveddel.typ"
-#include "tests.typ"
-
-// Bibliografi
-// #include "biblio.typ"
 #set bibliography(
   title: none
 )
-= Bibliografi
-#bibliography("kilder.bib", style: "harvard-cite-them-right")
+// = Bibliografi
+// #bibliography("kilder.bib", style: "harvard-cite-them-right")
 
-// = Bilag
-// #include "bilag.typ"
+#include "bilag.typ"
