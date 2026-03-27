@@ -102,7 +102,7 @@ For at sikre at kun de rigtige personer har adgang til at gøre hvad de har brug
   Bilag 3: valideringsflow
 ]
 
-Herefter kan jeg få deres bruger fra rækken som repræsenterer sessionen i tabellen vha. den relation som er beskrevet i ER-diagrammet mellem .
+Herefter kan jeg få deres bruger fra rækken som repræsenterer sessionen i tabellen vha. den relation som er beskrevet i ER-diagrammet mellem `teachers` og `teacher_sessions`.
 
 === Password hashing
 Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgangskode, kører jeg en hashing algorithme, som er en irreversibel matematisk funktion over plaintext koden for at gøre den ulæsbar. Når lærere forsøger at logge ind, kører jeg samme algoritme over deres givne adgangskode og ser om de stemmer overens. Golang har et bibliotek kaldet `golang.org/x/crypto/bcrypt` som hjælper med hashingfunktioner med videre, så det er det, der bruges i applikationen.
