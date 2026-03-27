@@ -190,10 +190,4 @@
   #include "konklusion.typ"
 ])
 
-#set bibliography(
-  title: none
-)
-// = Bibliografi
-// #bibliography("kilder.bib", style: "harvard-cite-them-right")
-
 #include "bilag.typ"
