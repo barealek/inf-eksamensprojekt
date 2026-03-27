@@ -184,7 +184,10 @@
 #word-count((totals) => [
   #totals.characters
   #include "hoveddel.typ"
+  #pagebreak()
   #include "tests.typ"
+  #pagebreak()
+  #include "konklusion.typ"
 ])
 
 #set bibliography(
