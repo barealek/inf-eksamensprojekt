@@ -7,3 +7,10 @@ Generelt var deres feedback god. Systemet var hurtigt og intuitivt, og der var i
 En af eleverne meldte tilbage, at de savnede en måde hvorpå de kunne fjerne sig selv fra køen.
 
 == Demo
+
+Her er en QR-kode til en video, som fremviser produktets primære funktioner med to testpersoner.
+#import "@preview/cades:0.3.1": qr-code
+#align(center)[
+  #qr-code("https://drive.google.com/file/d/1rp3r1qcM1VpInKTQpwRgIVWLG09-CA9L/view?usp=drive_link", width: 33%)
+]
+https://drive.google.com/file/d/1rp3r1qcM1VpInKTQpwRgIVWLG09-CA9L/view?usp=drive_link
