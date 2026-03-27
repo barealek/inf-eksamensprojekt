@@ -138,7 +138,7 @@
       ]
 
       #text(size: 10pt)[
-        Tegn: 6818 \
+        Tegn: 6895 \
         Sider: 56
       ]
     ]
