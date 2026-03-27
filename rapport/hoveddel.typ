@@ -21,6 +21,7 @@ Testkrav:
 Nedenfor er der et blokdiagram af, hvordan applikationens arkitektur er skruet sammen.
 #align(center)[
   #image("billeder/arkitektur.png", width: 66%)
+  _Bilag 1_
 ]
 
 Vi har defineret en server som består af primært to forskellige services. En database, som i dette projekt er en Postgres-database, og en API.
@@ -67,6 +68,7 @@ Som beskrevet tidligere, bruger jeg i projektet Postgres som SQL-database. Den k
 Nedenfor er der en visualisering af programmets database.
 #align(center)[
   #image("billeder/er-skema.png", width: 66%)
+  Bilag 2
 ]
 En vigtig detalje ved dette database skema er, at relationen fra `teacher_sessions:id` til `queues:teacher_session_id` og relationen fra `queues:id` til `queue_entries:queue_id` er defineret som `ON DELETE CASCADE`. Det betyder, at når jeg invaliderer og dermed sletter vores teacher session, slettes alle køer + alle kø-entries som har noget med den teacher session at gøre.
 Ved at lave den kaskadedefinition på databasepolitikken kan jeg nemt rydde op i alt data, der har med en kø at gøre, ved bare at slette deres session i databasen.
@@ -97,7 +99,7 @@ For at sikre at kun de rigtige personer har adgang til at gøre hvad de har brug
 
 #align(center)[
   #image("billeder/validering-flow.png", width: 66%)
-  Bilag x: valideringsflow
+  Bilag 3: valideringsflow
 ]
 
 Herefter kan jeg få deres bruger fra rækken som repræsenterer sessionen i tabellen vha. den relation som er beskrevet i ER-diagrammet mellem .
@@ -107,7 +109,7 @@ Derudover skal lærernes adgangskoder også hashes. Når de opretter deres adgan
 
 #align(center)[
   #image("billeder/hashing-flow.png", width: 66%)
-  Bilag x: flow til hashing af adgangskoder
+  Bilag 4: flow til hashing af adgangskoder
 ]
 
 === Firewall
@@ -119,7 +121,7 @@ Jeg har lavet et udkast til designet med skitser og wireframes, hvor jeg skitser
 
 #align(center)[
   #image("billeder/skitse-af-lærerside.jpg", width: 66%)
-  Bilag x: Skitse af lærerside
+  Bilag 5: Skitse af lærerside
 ]
 
 Designet er lavet så det overholder gestaltlovene, mere præcist loven om nærhed og loven om lukkethed.
@@ -129,7 +131,7 @@ Disse informationer holder vi tæt på hinanden, samtidig med at de er visuelt s
 
 #align(center)[
   #image("billeder/layout-lærer.png", width: 66%)
-  Bilag x: Færdige layout af lærersiden
+  Bilag 6: Færdige layout af lærersiden
 ]
 
-På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste informationer til eleven. Den holdes simpel med vilje. (se bilag 6)
+På elevsiden er der en enkelt lukket boks, som præsenterer de vigtigste informationer til eleven. Den holdes simpel med vilje. (se bilag 7)

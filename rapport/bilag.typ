@@ -13,19 +13,19 @@ _Bilag 3: Visualisering over, hvordan serveren validerer brugere_
 #v(2em)
 
 #image("billeder/hashing-flow.png", width: 66%)
-_Bilag 3: Visualisering over, hvordan serveren hasher brugeres koder_
+_Bilag 4: Visualisering over, hvordan serveren hasher brugeres koder_
 #v(2em)
 
 #image("billeder/skitse-af-lærerside.jpg", width: 66%)
-_Bilag 4: Skitse af lærersiden_
+_Bilag 5: Skitse af lærersiden_
 #v(2em)
 
 #image("billeder/layout-lærer.png", width: 66%)
-_Bilag 5: Screenshot af lærersiden_
+_Bilag 6: Screenshot af lærersiden_
 #v(2em)
 
 #image("billeder/layout-elev.jpg", width: 40%)
-_Bilag 6: Screenshot af elevsiden_
+_Bilag 7: Screenshot af elevsiden_
 
 == API-kode
 
