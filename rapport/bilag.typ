@@ -2055,3 +2055,480 @@ export function updateNote(queueId, note) {
   });
 }
 ```
+
+`index.html`
+```
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Vejledningskø</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
+</html>
+```
+
+`index.jsx`
+```js
+/* @refresh reload */
+import { render } from 'solid-js/web'
+import './index.css'
+import App from './App.jsx'
+
+const root = document.getElementById('root')
+
+render(() => <App />, root)
+```
+
+`index.css`
+```css
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #334155;
+  --text-strong: #0f172a;
+  --muted: #64748b;
+  --border: #e5e7eb;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --success: #15803d;
+  --success-bg: #f0fdf4;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  font: 16px/1.5 var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+.app-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  text-align: left;
+  flex: 1;
+}
+
+.page--narrow {
+  max-width: 440px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: clamp(2rem, 8vh, 3.5rem);
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-header--stack {
+  flex-direction: column;
+}
+
+.page-title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 3.5vw, 1.65rem);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.page-title--small {
+  font-size: 1.2rem;
+}
+
+.app-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.section-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.lede {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+
+.breadcrumb {
+  margin-bottom: 0.75rem;
+}
+
+.breadcrumb a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9375rem;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+.input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: var(--text-strong);
+  background: #fff;
+  transition: border-color 0.12s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text-strong);
+  border-color: var(--border);
+  margin-top: 0.75rem;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+.banner {
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  margin: 0 0 1rem;
+}
+
+.banner-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+}
+
+.banner-success {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid #bbf7d0;
+}
+
+.queue-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 560px) {
+  .queue-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.queue-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.12s;
+}
+
+.queue-card:hover {
+  border-color: #cbd5e1;
+}
+
+.queue-card-title {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.queue-card-wait {
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.9375rem;
+}
+
+.queue-card-wait strong {
+  font-size: 1.2rem;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.queue-detail-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 800px) {
+  .queue-detail-grid {
+    grid-template-columns: 280px 1fr;
+    align-items: start;
+  }
+}
+
+.qr-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0 1rem;
+}
+
+.qr-wrap img {
+  display: block;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.entry-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entry-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.entry-row:hover:not(:disabled) {
+  background: var(--bg);
+  border-color: #cbd5e1;
+}
+
+.entry-row--done {
+  opacity: 0.55;
+  text-decoration: line-through;
+  cursor: default;
+  background: var(--bg);
+}
+
+.entry-row--done .entry-meta {
+  text-decoration: none;
+}
+
+.entry-row--pending {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.entry-name {
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+.entry-meta {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.wait-status {
+  padding: 0.5rem 0 0.25rem;
+}
+
+.wait-greeting {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.wait-place {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.wait-place strong {
+  color: var(--text-strong);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+```
+
+== Anden kode
+
+`Dockerfile`
+```dockerfile
+FROM oven/bun:1 AS frontend
+
+WORKDIR /app/frontend/
+COPY frontend/ /app/frontend/
+RUN bun install
+RUN bun run build
+
+FROM golang:1-alpine
+
+WORKDIR /app
+COPY --from=frontend /app/frontend/dist static/
+COPY go.* .
+RUN go mod download -x
+
+COPY . .
+
+RUN go build -o /bin/app .
+
+CMD ["/bin/app"]
+```
+
+`docker-compose.yml`
+```yml
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - ./data:/var/lib/postgresql/18/docker
+
+  app:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "postgres://app:app@db:5432/app"
+```
