@@ -120,6 +120,9 @@ export default function Wait() {
           <p class="banner banner-success">
             Du er blevet markeret som færdig. Tak for i dag.
           </p>
+          <p class="muted small" style={{ "margin-top": "0.75rem" }}>
+            Giv gerne feedback til Aleksander
+          </p>
         </Show>
 
         <Show when={!boot() && !doneMsg() && me()?.authenticated}>
